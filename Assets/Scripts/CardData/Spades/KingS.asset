@@ -15,3 +15,4 @@ MonoBehaviour:
   cardName: KingS
   cardType: 2
   DMG: 10
+  sprite: {fileID: 21300000, guid: fb77b0418e7ca0846a0ced35f9d900af, type: 3}

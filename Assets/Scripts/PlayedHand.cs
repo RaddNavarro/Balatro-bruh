@@ -12,9 +12,36 @@ public class PlayedHand : MonoBehaviour
     [SerializeField] private GameObject slotPrefab;
     [SerializeField] private List<Card> playedCards;
     [SerializeField] public List<CardAttributes> botDeck;
-    [SerializeField] private CardVisual cardVisual;
 
     private List<CardAttributes> playedCardsBot;
+    private int playerPoints = 0;
+    private int botPoints = 0;
+    private int scale = 3;
+
+    private enum RANKS
+    {
+        HighCard,
+        OnePair,
+        TwoPair,
+        ThreeKind,
+        Straight,
+        Flush,
+        FullHouse,
+        FourKind,
+        StraightFlush,
+        RoyalFlush,
+
+    }
+
+    private enum SUITS
+    {
+        Hearts,
+        Diamonds,
+        Spades,
+        Clubs
+    }
+
+
 
     private void Start()
     {
@@ -98,7 +125,6 @@ public class PlayedHand : MonoBehaviour
         {
 
             BattleCards(playedCardsBot[index], playedCards[index].cardType);
-            Debug.Log("played card at" + " " + index);
 
             index++;
             yield return StartCoroutine(PlaySequence(index));
@@ -116,15 +142,19 @@ public class PlayedHand : MonoBehaviour
     {
         if (botCard.DMG > playerCard.DMG)
         {
-            Debug.Log("Bot Wins" + " " + botCard.DMG + " " + playerCard.DMG);
+            botPoints += 1;
+            Debug.Log(botPoints + " : " + playerPoints);
         }
         else if (botCard.DMG < playerCard.DMG)
         {
-            Debug.Log("Player Wins" + " " + botCard.DMG + " " + playerCard.DMG);
+            playerPoints += 1;
+            Debug.Log(botPoints + " : " + playerPoints);
+
         }
         else
         {
             Debug.Log("Draw" + " " + botCard.DMG + " " + playerCard.DMG);
+            Debug.Log("Draw" + " " + botPoints + " : " + playerPoints);
         }
 
 
@@ -135,29 +165,41 @@ public class PlayedHand : MonoBehaviour
         yield return PlaySequence(0);
 
         int i = 0;
-        // int index = 0;
-        Debug.Log(playedCards.Count);
         while (i < playedCards.Count)
         {
 
             Destroy(playedCards[i].transform.parent.gameObject);
 
-            Debug.Log("ran the destroy" + i);
             Debug.Log(playedCards.Count);
             i++;
             yield return new WaitForSeconds(0.5f);
         }
-        // for (int i = 0; i < playedCards.Count; i++)
-        // {
-        // }
         Debug.Log("done playing");
+        if (playerPoints > botPoints)
+        {
+            scale += 1;
+            Debug.Log(scale);
+            playerPoints = 0;
+            botPoints = 0;
+        }
+        else
+        {
+            scale -= 1;
+            Debug.Log(scale);
+            playerPoints = 0;
+            botPoints = 0;
+        }
         playedCards.Clear();
+        PlayingCardHolder.DrawHand();
     }
 
     private void Select(Card card, bool state)
     {
         card.SelectEvent.Invoke(card, card.selected);
     }
+
+
+
 
 
 

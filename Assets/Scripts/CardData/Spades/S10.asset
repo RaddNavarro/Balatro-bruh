@@ -15,3 +15,4 @@ MonoBehaviour:
   cardName: S10
   cardType: 2
   DMG: 10
+  sprite: {fileID: 21300000, guid: 7637454926463914c9e03eaff3e13316, type: 3}
