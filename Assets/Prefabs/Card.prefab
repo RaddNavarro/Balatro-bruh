@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 513463891238346873}
   - component: {fileID: 5579909536616531563}
-  - component: {fileID: 1275948563406204317}
+  - component: {fileID: 6852070978318494399}
   - component: {fileID: 1912507227220804571}
   - component: {fileID: 6468756747503883698}
   - component: {fileID: 854737715014376857}
@@ -48,7 +48,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7281923201031000268}
   m_CullTransparentMesh: 1
---- !u!114 &1275948563406204317
+--- !u!114 &6852070978318494399
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -57,7 +57,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 7281923201031000268}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c2b14304f60b66a4a8d307e9b9e2940f, type: 3}
+  m_Script: {fileID: 11500000, guid: fe66ff910ad9add41bde14095360c6e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   cardType: {fileID: 0}
