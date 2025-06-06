@@ -15,3 +15,4 @@ MonoBehaviour:
   cardName: QueenS
   cardType: 2
   DMG: 10
+  sprite: {fileID: 21300000, guid: ffb16d90ffd46574b9ae565af69bed22, type: 3}
