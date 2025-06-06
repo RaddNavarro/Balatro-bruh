@@ -15,3 +15,4 @@ MonoBehaviour:
   cardName: AceS
   cardType: 2
   DMG: 11
+  sprite: {fileID: 21300000, guid: 3deb1081b828f8e46b3e3ecb615dd3cc, type: 3}

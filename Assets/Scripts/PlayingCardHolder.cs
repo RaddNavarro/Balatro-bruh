@@ -3,19 +3,20 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using DG.Tweening;
-using static TeamPassione.Card;
 using TeamPassione;
+using UnityEditor;
+using UnityEngine.SearchService;
 
 public class PlayingCardHolder : MonoBehaviour
 {
-    [SerializeField] private Cards selectedCard;
+    [SerializeField] private Card selectedCard;
     [Header("Lists")]
-    public List<Card> Deck = new List<Card>();
+    public List<CardAttributes> Deck = new List<CardAttributes>();
 
 
-    [HideInInspector] public Card cardType;
+    [HideInInspector] public CardAttributes cardAttributes;
 
-    [SerializeReference] private Cards hoveredCard;
+    [SerializeReference] private Card hoveredCard;
 
     [SerializeField] private GameObject slotPrefab;
     private RectTransform rect;
@@ -23,16 +24,13 @@ public class PlayingCardHolder : MonoBehaviour
     [Header("Spawn Settings")]
     [SerializeField] private int cardsToSpawn = 8;
     private int maxCardsInHand = 8;
-    public List<Cards> cards;
-    public List<Cards> selectedCards;
-
-
-
+    [SerializeField] private List<Card> cards;
+    public List<Card> selectedCards;
 
     bool isCrossing = false;
     [SerializeField] private bool tweenCardReturn = true;
 
-    
+
 
 
     private void Start()
@@ -41,19 +39,19 @@ public class PlayingCardHolder : MonoBehaviour
 
         for (int i = 0; i < cardsToSpawn; i++)
         {
-            GameObject card = Instantiate(slotPrefab, transform);
-            int randomCard = Random.Range(0, Deck.Count);
+            int randomCardAttribute = Random.Range(0, Deck.Count);
 
-            card.GetComponentInChildren<Cards>().cardType = Deck[randomCard];
-            Deck.RemoveAt(randomCard);
+            GameObject card = Instantiate(slotPrefab, transform);
+            card.GetComponentInChildren<Card>().cardType = Deck[randomCardAttribute];
+            Deck.RemoveAt(randomCardAttribute);
         }
 
         rect = GetComponent<RectTransform>();
-        cards = GetComponentsInChildren<Cards>().ToList();
+        cards = GetComponentsInChildren<Card>().ToList();
 
         int cardCount = 0;
 
-        foreach (Cards card in cards)
+        foreach (Card card in cards)
         {
             card.PointerEnterEvent.AddListener(CardPointerEnter);
             card.PointerExitEvent.AddListener(CardPointerExit);
@@ -79,20 +77,21 @@ public class PlayingCardHolder : MonoBehaviour
 
     public void DrawHand()
     {
-        Shuffle(Deck);
-        Debug.Log(cards.Count);
         int numberOfCardsToDraw = (maxCardsInHand - cards.Count);
-        if (cards.Count < maxCardsInHand && cards.Count != maxCardsInHand) 
-        {
-            Debug.Log("inside the if");
 
+
+
+
+        if (cards.Count < maxCardsInHand && cards.Count != maxCardsInHand)
+        {
+            Shuffle(Deck);
             for (int numberOfCards = 0; numberOfCards < numberOfCardsToDraw; numberOfCards++)
             {
-                GameObject card = Instantiate(slotPrefab, transform);
-                int randomCard = Random.Range(0, Deck.Count);
+                int randomCardAttribute = Random.Range(0, Deck.Count);
 
-                card.GetComponentInChildren<Cards>().cardType = Deck[randomCard];
-                Deck.RemoveAt(randomCard);
+                GameObject card = Instantiate(slotPrefab, transform);
+                card.GetComponentInChildren<Card>().cardType = Deck[randomCardAttribute];
+                Deck.RemoveAt(randomCardAttribute);
             }
         }
         else
@@ -101,11 +100,11 @@ public class PlayingCardHolder : MonoBehaviour
         }
 
         rect = GetComponent<RectTransform>();
-        cards = GetComponentsInChildren<Cards>().ToList();
+        cards = GetComponentsInChildren<Card>().ToList();
 
         int cardCount = 0;
 
-        foreach (Cards card in cards)
+        foreach (Card card in cards)
         {
             card.PointerEnterEvent.AddListener(CardPointerEnter);
             card.PointerExitEvent.AddListener(CardPointerExit);
@@ -129,18 +128,17 @@ public class PlayingCardHolder : MonoBehaviour
     }
 
 
-    void Shuffle(List<Card> deck)
+    void Shuffle(List<CardAttributes> deck)
     {
-        // Loops through array
+
         for (int i = deck.Count - 1; i > 0; i--)
         {
-            // Randomize a number between 0 and i (so that the range decreases each time)
+
             int rnd = Random.Range(0, i);
 
-            // Save the value of the current i, otherwise it'll overright when we swap the values
-            Card temp = deck[i];
 
-            // Swap the new and old values
+            CardAttributes temp = deck[i];
+
             deck[i] = deck[rnd];
             deck[rnd] = temp;
         }
@@ -149,12 +147,12 @@ public class PlayingCardHolder : MonoBehaviour
     }
 
 
-    private void BeginDrag(Cards card)
+    private void BeginDrag(Card card)
     {
         selectedCard = card;
     }
 
-    private void EndDrag(Cards card)
+    private void EndDrag(Card card)
     {
 
         if (selectedCard == null)
@@ -173,12 +171,12 @@ public class PlayingCardHolder : MonoBehaviour
         selectedCard = null;
     }
 
-    private void CardPointerEnter(Cards card)
+    private void CardPointerEnter(Card card)
     {
         hoveredCard = card;
     }
 
-    private void CardPointerExit(Cards card)
+    private void CardPointerExit(Card card)
     {
         hoveredCard = null;
     }
@@ -198,11 +196,15 @@ public class PlayingCardHolder : MonoBehaviour
 
         if (Input.GetMouseButtonDown(1))
         {
-            foreach (Cards card in cards)
+            foreach (Card card in cards)
             {
+
                 card.Deselect();
             }
         }
+
+
+
 
         if (selectedCard == null)
             return;
@@ -243,12 +245,13 @@ public class PlayingCardHolder : MonoBehaviour
                 if (selectedCard.ParentIndex() > cards[index].ParentIndex())
                 {
                     Swap(index);
-   
+
                     break;
                 }
             }
         }
     }
+
 
     void Swap(int index)
     {
@@ -260,7 +263,7 @@ public class PlayingCardHolder : MonoBehaviour
         cards[index].transform.SetParent(focusedParent);
         cards[index].transform.localPosition = cards[index].selected ? new Vector3(0, cards[index].selectionOffset, 0) : Vector3.zero;
         selectedCard.transform.SetParent(crossedParent);
-        
+
         isCrossing = false;
 
         if (cards[index].cardVisual == null)
@@ -270,31 +273,32 @@ public class PlayingCardHolder : MonoBehaviour
         cards[index].cardVisual.Swap(swapIsRight ? -1 : 1);
 
         //Updated Visual Indexes
-        foreach (Cards card in cards)
+        foreach (Card card in cards)
         {
             card.cardVisual.UpdateIndex(transform.childCount);
         }
 
     }
 
-    public void PlayHand()
+
+
+    public void RemoveSelectedCardsPlayed()
     {
 
-        selectedCards.Clear();
-        foreach (Cards card in cards)
+        for (int i = cards.Count - 1; i >= 0; i--)
         {
+            Card card = cards[i];
             if (card.selected)
             {
-                
-                selectedCards.Add(card);
-                
+                Debug.Log("Removed");
+                cards.RemoveAt(i);
+
             }
         }
 
-        cards.RemoveAll(card => card.selected);
-        
+
     }
 
-   
+
 
 }
