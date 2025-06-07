@@ -125,7 +125,7 @@ public class PlayedHand : MonoBehaviour
         {
 
             BattleCards(playedCardsBot[index], playedCards[index].cardType);
-
+            Select(playedCards[index], playedCards[index].selected);
             index++;
             yield return StartCoroutine(PlaySequence(index));
 

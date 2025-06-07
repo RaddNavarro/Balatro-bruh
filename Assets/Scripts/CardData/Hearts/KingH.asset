@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: KingH
   m_EditorClassIdentifier: 
   cardName: KingH
-  cardType: 00000000
+  cardType: 0
   DMG: 10
+  sprite: {fileID: 21300000, guid: d7ebe1ef1a5f36a458cea1d488ac3542, type: 3}

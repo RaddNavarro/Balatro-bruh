@@ -15,3 +15,4 @@ MonoBehaviour:
   cardName: D9
   cardType: 1
   DMG: 9
+  sprite: {fileID: 21300000, guid: 8fb5ea26cc0891c45a1e8b62f090a19d, type: 3}

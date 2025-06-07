@@ -15,3 +15,4 @@ MonoBehaviour:
   cardName: C8
   cardType: 3
   DMG: 8
+  sprite: {fileID: 21300000, guid: f1baa07ff6c819b44aaa7e3d60beda20, type: 3}

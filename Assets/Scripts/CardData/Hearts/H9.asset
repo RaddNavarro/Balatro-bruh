@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: H9
   m_EditorClassIdentifier: 
   cardName: H9
-  cardType: 00000000
+  cardType: 0
   DMG: 9
+  sprite: {fileID: 21300000, guid: 58172dd57ba99ae4fbaaa86d200c2d25, type: 3}
