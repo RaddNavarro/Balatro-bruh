@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: JackH
   m_EditorClassIdentifier: 
   cardName: JackH
-  cardType: 00000000
+  cardType: 0
   DMG: 10
+  sprite: {fileID: 21300000, guid: 5194465436555dd4ab7649ba1854e344, type: 3}

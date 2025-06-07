@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: H3
   m_EditorClassIdentifier: 
   cardName: H3
-  cardType: 00000000
+  cardType: 0
   DMG: 3
+  sprite: {fileID: 21300000, guid: 8af34876528bf9d4d987158c1f8dae06, type: 3}

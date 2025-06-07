@@ -15,3 +15,4 @@ MonoBehaviour:
   cardName: C4
   cardType: 3
   DMG: 4
+  sprite: {fileID: 21300000, guid: 58db931ab824a3843b430b9b9ea1a95e, type: 3}

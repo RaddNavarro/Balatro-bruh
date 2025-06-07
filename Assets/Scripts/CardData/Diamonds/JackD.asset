@@ -15,3 +15,4 @@ MonoBehaviour:
   cardName: JackD
   cardType: 1
   DMG: 10
+  sprite: {fileID: 21300000, guid: f7c104d35cec52844ac80b0300970d5d, type: 3}
