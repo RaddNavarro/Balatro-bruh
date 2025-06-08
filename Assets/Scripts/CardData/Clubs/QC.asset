@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 69babd2675942f547afd65ac65df1975, type: 3}
-  m_Name: QueenC
+  m_Name: QC
   m_EditorClassIdentifier: 
-  cardName: QueenC
+  cardName: QC
   cardType: 3
   DMG: 10
   sprite: {fileID: 21300000, guid: cf89f6c50ad502044ba7f20e0ce347da, type: 3}

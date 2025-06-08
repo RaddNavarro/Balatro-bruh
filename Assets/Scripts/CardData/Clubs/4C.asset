@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 69babd2675942f547afd65ac65df1975, type: 3}
-  m_Name: KingS
+  m_Name: 4C
   m_EditorClassIdentifier: 
-  cardName: KingS
-  cardType: 2
-  DMG: 10
-  sprite: {fileID: 21300000, guid: fb77b0418e7ca0846a0ced35f9d900af, type: 3}
+  cardName: 4C
+  cardType: 3
+  DMG: 4
+  sprite: {fileID: 21300000, guid: 58db931ab824a3843b430b9b9ea1a95e, type: 3}

@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 69babd2675942f547afd65ac65df1975, type: 3}
-  m_Name: AceD
+  m_Name: KS
   m_EditorClassIdentifier: 
-  cardName: AceD
-  cardType: 1
-  DMG: 11
-  sprite: {fileID: 21300000, guid: 8804cc1154bd5e14ca5d3bb63019adaf, type: 3}
+  cardName: KS
+  cardType: 2
+  DMG: 10
+  sprite: {fileID: 21300000, guid: fb77b0418e7ca0846a0ced35f9d900af, type: 3}

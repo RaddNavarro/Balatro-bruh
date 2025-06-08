@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 69babd2675942f547afd65ac65df1975, type: 3}
-  m_Name: C8
+  m_Name: JD
   m_EditorClassIdentifier: 
-  cardName: C8
-  cardType: 3
-  DMG: 8
-  sprite: {fileID: 21300000, guid: f1baa07ff6c819b44aaa7e3d60beda20, type: 3}
+  cardName: JD
+  cardType: 1
+  DMG: 10
+  sprite: {fileID: 21300000, guid: f7c104d35cec52844ac80b0300970d5d, type: 3}
