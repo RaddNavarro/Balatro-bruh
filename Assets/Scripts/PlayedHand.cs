@@ -1,12 +1,5 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using TeamPassione;
-using TMPro;
-using UnityEditor.Tilemaps;
+
 using UnityEngine;
-using UnityEngine.UI;
 
 public class PlayedHand : MonoBehaviour
 {

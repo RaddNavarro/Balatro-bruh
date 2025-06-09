@@ -18,6 +18,7 @@ public class HandManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI currentRoundText;
     [SerializeField] private TextMeshProUGUI totalScoreText;
     [SerializeField] private TextMeshProUGUI botHandText;
+    [SerializeField] private TextMeshProUGUI discardCountText; // NEW: UI text to show remaining discards
 
     [SerializeField] private Button playHandButton;
     [SerializeField] private Button discardButton;
@@ -35,6 +36,10 @@ public class HandManager : MonoBehaviour
     private int playerPoints = 0;
     private int botPoints = 0;
     private int round = 1;
+
+    // NEW: Discard tracking variables
+    private int maxDiscards = 4;
+    private int discardsUsed = 0;
 
     public enum RANKS
     {
@@ -74,17 +79,37 @@ public class HandManager : MonoBehaviour
         round = 1;
         playerPoints = 0;
         botPoints = 0;
+        discardsUsed = 0; // NEW: Initialize discard counter
 
         // Initialize UI text
         scoreText.text = "Round Points - Player: " + playerBaseDmgScore + " Bot: " + botBaseDmgScore;
         totalScoreText.text = "Total Points - Player: " + playerTotalScore + " Bot: " + botTotalScore;
         currentRoundText.text = "Round:  " + round;
+        UpdateDiscardUI(); // NEW: Initialize discard UI
+        
         if (pokerHandText != null)
             pokerHandText.text = "Player: Select cards to play";
         if (botHandText != null)
             botHandText.text = "Bot: Waiting...";
     }
 
+    // NEW: Method to update discard UI
+    private void UpdateDiscardUI()
+    {
+        if (discardCountText != null)
+        {
+            int remaining = maxDiscards - discardsUsed;
+            discardCountText.text = "Discards Remaining: " + remaining;
+            
+            // Change color based on remaining discards
+            if (remaining <= 0)
+                discardCountText.color = Color.red;
+            else if (remaining <= 1)
+                discardCountText.color = Color.yellow;
+            else
+                discardCountText.color = Color.white;
+        }
+    }
 
     private void Update()
     {
@@ -99,8 +124,11 @@ public class HandManager : MonoBehaviour
 
         if (discardButton != null)
         {
-            // Only allow discarding when not in cooldown and there are selected cards
-            discardButton.interactable = !isButtonOnCooldown && PlayingCardHolder.selectedCards.Count > 0;
+            // MODIFIED: Only allow discarding when not in cooldown, there are selected cards, AND discards are available
+            bool canDiscard = !isButtonOnCooldown && 
+                             PlayingCardHolder.selectedCards.Count > 0 && 
+                             discardsUsed < maxDiscards;
+            discardButton.interactable = canDiscard;
         }
     }
 
@@ -149,12 +177,11 @@ public class HandManager : MonoBehaviour
         }
     }
 
-
+    // FIXED: These methods now only update UI during animation, don't recalculate scores
     private void CheckPokerHand(CardAttributes card, RANKS handRank)
     {
-
         float multiplier = GetHandMultiplier(handRank);
-        playerBaseDmgScore += card.DMG;
+        // REMOVED: playerBaseDmgScore += card.DMG; - This was causing double counting
         UpdatePokerHandUI(handRank, multiplier);
     }
 
@@ -173,10 +200,8 @@ public class HandManager : MonoBehaviour
 
     private void CheckBotPokerHand(CardAttributes botCard, RANKS handRankBot)
     {
-
         float multiplier = GetHandMultiplier(handRankBot);
-
-        botBaseDmgScore += botCard.DMG;
+        // REMOVED: botBaseDmgScore += botCard.DMG; - This was causing double counting
         UpdateBotHandUI(handRankBot, multiplier);
     }
 
@@ -229,15 +254,86 @@ public class HandManager : MonoBehaviour
         }
     }
 
+    // NEW: Calculate score based on poker hand type - only count relevant cards
+    private int CalculateHandScore(List<CardAttributes> cards, RANKS handRank)
+    {
+        if (cards.Count == 0) return 0;
+
+        // For high-level hands that use all cards, count everything
+        if (handRank == RANKS.RoyalFlush || handRank == RANKS.StraightFlush || 
+            handRank == RANKS.Straight || handRank == RANKS.Flush)
+        {
+            return cards.Sum(card => card.DMG);
+        }
+
+        // Extract card values for analysis
+        Dictionary<int, List<CardAttributes>> valueGroups = new Dictionary<int, List<CardAttributes>>();
+        
+        foreach (CardAttributes card in cards)
+        {
+            int value = GetCardValue(card.name.ToUpper());
+            if (!valueGroups.ContainsKey(value))
+                valueGroups[value] = new List<CardAttributes>();
+            valueGroups[value].Add(card);
+        }
+
+        // Sort groups by count (descending) then by DMG sum (descending)
+        var sortedGroups = valueGroups.Values
+            .OrderByDescending(group => group.Count)
+            .ThenByDescending(group => group.Sum(card => card.DMG))
+            .ToList();
+
+        switch (handRank)
+        {
+            case RANKS.HighCard:
+                // Only count the highest value card
+                return sortedGroups[0].OrderByDescending(card => card.DMG).First().DMG;
+
+            case RANKS.OnePair:
+                // Only count the pair (2 cards of same value)
+                var pairGroup = sortedGroups.FirstOrDefault(group => group.Count >= 2);
+                return pairGroup?.Take(2).Sum(card => card.DMG) ?? 0;
+
+            case RANKS.TwoPair:
+                // Only count both pairs (4 cards total)
+                var pairs = sortedGroups.Where(group => group.Count >= 2).Take(2).ToList();
+                int score = 0;
+                foreach (var pair in pairs)
+                {
+                    score += pair.Take(2).Sum(card => card.DMG);
+                }
+                return score;
+
+            case RANKS.ThreeKind:
+                // Only count the three of a kind
+                var threeGroup = sortedGroups.FirstOrDefault(group => group.Count >= 3);
+                return threeGroup?.Take(3).Sum(card => card.DMG) ?? 0;
+
+            case RANKS.FullHouse:
+                // Count the three of a kind + the pair
+                var fullHouseThree = sortedGroups.FirstOrDefault(group => group.Count >= 3);
+                var fullHousePair = sortedGroups.Skip(1).FirstOrDefault(group => group.Count >= 2);
+                int fullHouseScore = fullHouseThree?.Take(3).Sum(card => card.DMG) ?? 0;
+                fullHouseScore += fullHousePair?.Take(2).Sum(card => card.DMG) ?? 0;
+                return fullHouseScore;
+
+            case RANKS.FourKind:
+                // Only count the four of a kind
+                var fourGroup = sortedGroups.FirstOrDefault(group => group.Count >= 4);
+                return fourGroup?.Take(4).Sum(card => card.DMG) ?? 0;
+
+            default:
+                // Fallback: count all cards
+                return cards.Sum(card => card.DMG);
+        }
+    }
+
     private void UpdateScore()
     {
         if (scoreText != null)
             scoreText.text = "Round Points - Player: " + playerBaseDmgScore + " Bot: " + botBaseDmgScore;
         currentRoundText.text = "Round: " + round;
-
-
     }
-
     private void UpdateTotalScore(float multiplierPlayer, float multiplierBot)
     {
         int playerScore = (int)(Math.Round((float)(playerBaseDmgScore * multiplierPlayer)));
@@ -455,13 +551,21 @@ public class HandManager : MonoBehaviour
         RANKS handRankPlayer = EvaluatePokerHand(playerHand);
         RANKS handRankBot = EvaluatePokerHand(playedCardsBot);
 
+        // FIXED: Calculate scores once here based on poker hand validation
+        playerBaseDmgScore = CalculateHandScore(playerHand, handRankPlayer);
+        botBaseDmgScore = CalculateHandScore(playedCardsBot, handRankBot);
+
+        // Update UI to show the validated scores
+        UpdatePokerHandUI(handRankPlayer, GetHandMultiplier(handRankPlayer));
+        UpdateBotHandUI(handRankBot, GetHandMultiplier(handRankBot));
+        UpdateScore();
+
         yield return PlaySequence(0, handRankPlayer, handRankBot);
 
         float multiplierPlayer = GetHandMultiplier(handRankPlayer);
         float multiplierBot = GetHandMultiplier(handRankBot);
 
         UpdateTotalScore(multiplierPlayer, multiplierBot);
-
 
         int i = 0;
         while (i < playedCards.Count)
@@ -472,7 +576,6 @@ public class HandManager : MonoBehaviour
         }
         playerBaseDmgScore = 0;
         botBaseDmgScore = 0;
-
 
         UpdateScore();
         UpdatePoints();
@@ -485,9 +588,6 @@ public class HandManager : MonoBehaviour
             Win();
         }
         //Lose
-
-
-
 
         isButtonOnCooldown = false;
 
@@ -506,14 +606,26 @@ public class HandManager : MonoBehaviour
         PlayingCardHolder.DrawHand();
 
         round++;
-
     }
 
     public void DiscardSelectedCards()
     {
-        if (isButtonOnCooldown || PlayingCardHolder.selectedCards.Count == 0)
+        // MODIFIED: Check if discards are available - STRICT CHECK
+        if (discardsUsed >= maxDiscards)
         {
-            Debug.Log("Cannot discard: either on cooldown or no cards selected");
+            Debug.Log("Cannot discard: Maximum discards reached (" + discardsUsed + "/" + maxDiscards + ")");
+            return;
+        }
+
+        if (isButtonOnCooldown)
+        {
+            Debug.Log("Cannot discard: Button on cooldown");
+            return;
+        }
+
+        if (PlayingCardHolder.selectedCards.Count == 0)
+        {
+            Debug.Log("Cannot discard: No cards selected");
             return;
         }
 
@@ -521,9 +633,18 @@ public class HandManager : MonoBehaviour
         StartCoroutine(DiscardCardsCoroutine());
     }
 
-    // NEW: Coroutine to properly handle card discarding
+    // MODIFIED: Coroutine to properly handle card discarding with counter increment
     private IEnumerator DiscardCardsCoroutine()
     {
+        // IMPORTANT: Increment discard counter FIRST to prevent multiple calls
+        discardsUsed++;
+        Debug.Log("Discard used: " + discardsUsed + "/" + maxDiscards);
+        UpdateDiscardUI();
+
+        // Temporarily disable the discard button to prevent spam clicking
+        if (discardButton != null)
+            discardButton.interactable = false;
+
         // Create a copy of the selected cards list to avoid modification during iteration
         List<Card> cardsToDiscard = new List<Card>(PlayingCardHolder.selectedCards);
 
@@ -547,7 +668,6 @@ public class HandManager : MonoBehaviour
             }
         }
 
-
         // Wait for the objects to be actually destroyed
         yield return new WaitForEndOfFrame();
         yield return new WaitForSeconds(0.2f);
@@ -558,17 +678,19 @@ public class HandManager : MonoBehaviour
             PlayingCardHolder.selectedCards = new List<Card>();
         }
 
-
         PlayingCardHolder.DrawHand();
-
 
         yield return new WaitForSeconds(0.1f);
         if (PlayingCardHolder.selectedCards.Count == 0)
         {
-
             PlayingCardHolder.DrawHand();
         }
 
+        // Re-enable the discard button if discards are still available
+        if (discardButton != null)
+        {
+            discardButton.interactable = discardsUsed < maxDiscards && PlayingCardHolder.selectedCards.Count > 0;
+        }
     }
 
 
@@ -600,4 +722,3 @@ public class HandManager : MonoBehaviour
 
 
 }
-
