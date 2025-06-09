@@ -12,7 +12,7 @@ public class PlayingCardHolder : MonoBehaviour
     [SerializeField] private Card selectedCard;
     [Header("Lists")]
     public List<CardAttributes> Deck = new List<CardAttributes>();
-
+    [SerializeField] private HandManager handManager;
 
     [HideInInspector] public CardAttributes cardAttributes;
 
@@ -29,23 +29,6 @@ public class PlayingCardHolder : MonoBehaviour
 
     bool isCrossing = false;
     [SerializeField] private bool tweenCardReturn = true;
-
-    public enum SUIT
-    {
-        HEARTS,
-        SPADES,
-        DIAMONDS,
-        CLUBS
-    }
-
-    public enum VALUE
-    {
-        TWO = 2, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING, ACE
-    }
-
-    public SUIT MySuit { get; set; }
-    public VALUE MyValue { get; set; }
-
 
     private void Start()
     {
@@ -72,6 +55,7 @@ public class PlayingCardHolder : MonoBehaviour
             card.BeginDragEvent.AddListener(BeginDrag);
             card.EndDragEvent.AddListener(EndDrag);
             card.name = cardCount.ToString();
+
             cardCount++;
         }
 
@@ -216,6 +200,18 @@ public class PlayingCardHolder : MonoBehaviour
                 card.Deselect();
             }
         }
+
+        // if (handManager.hasWon)
+        // {
+        //     Debug.Log("We have won");
+        //     foreach (Card card in cards)
+        //     {
+        //         card.PointerEnterEvent = null;
+        //         card.PointerExitEvent = null;
+        //         card.BeginDragEvent = null;
+        //         card.EndDragEvent = null;
+        //     }
+        // }
 
 
 
