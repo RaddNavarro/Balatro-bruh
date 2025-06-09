@@ -23,20 +23,14 @@ public class PlayedHand : MonoBehaviour
     // Button cooldown variables
     [SerializeField] private Button playHandButton; // Assign this in the inspector
     private bool isButtonOnCooldown = false;
-    private float buttonCooldownTime = 1.2f;
 
     private List<CardAttributes> playedCardsBot;
-    private int playerPoints = 0;
-    private int botPoints = 0;
+    // private int playerPoints = 0;
+    // private int botPoints = 0;
     private int playerTotalScore = 0;
     private int botTotalScore = 0;
-    private int playerRoundScore = 0;
-    private int botRoundScore = 0;
     private int playerBaseDmgScore = 0;
     private int botBaseDmgScore = 0;
-
-    private int keepBotScore = 0;
-    private int keepPlayerScore = 0;
 
     public enum RANKS
     {
@@ -78,54 +72,21 @@ public class PlayedHand : MonoBehaviour
             botHandText.text = "Bot: Waiting...";
     }
 
-    // Public method to be called by the button - includes cooldown check
-    public void OnPlayHandButtonPressed()
+    private void Update()
     {
-        if (isButtonOnCooldown)
-        {
-            Debug.Log("Button is on cooldown, please wait...");
-            return;
-        }
-
-        // Check if player has selected cards
-        if (PlayingCardHolder.selectedCards.Count == 0)
-        {
-            Debug.Log("No cards selected!");
-            return;
-        }
-
-        // Start cooldown
-        StartCoroutine(ButtonCooldown());
-
-        // Execute the main logic
-        MoveCardsToPlayedHand();
-    }
-
-    private IEnumerator ButtonCooldown()
-    {
-        isButtonOnCooldown = true;
-
-        // Disable the button visually if reference is available
-        if (playHandButton != null)
+        if (isButtonOnCooldown && playHandButton != null)
         {
             playHandButton.interactable = false;
         }
-
-        Debug.Log("Button cooldown started...");
-        yield return new WaitForSeconds(buttonCooldownTime);
-
-        // Re-enable the button
-        if (playHandButton != null)
+        else
         {
             playHandButton.interactable = true;
         }
-
-        isButtonOnCooldown = false;
-        Debug.Log("Button cooldown ended.");
     }
 
-    public void MoveCardsToPlayedHand()
+    public void BattleSequence()
     {
+        isButtonOnCooldown = true;
         playedCards = new List<Card>();
 
         foreach (Card card in PlayingCardHolder.selectedCards)
@@ -136,11 +97,7 @@ public class PlayedHand : MonoBehaviour
 
         PlayingCardHolder.selectedCards.Clear();
 
-
         BotPlay();
-
-
-
         StartCoroutine(DestroyCards());
     }
 
@@ -158,33 +115,9 @@ public class PlayedHand : MonoBehaviour
     private void CheckPokerHand(CardAttributes card, RANKS handRank)
     {
 
-
-        // List<CardAttributes> playerCardTypes = new List<CardAttributes>();
-        // foreach (Card card in playedCards)
-        // {
-        //     playerCardTypes.Add(card.cardType);
-        // }
-
-
-        // float multiplier = GetHandMultiplier(handRank);
         float multiplier = GetHandMultiplier(handRank);
-
-        // Debug.Log("Player has: " + handRank.ToString() + " (Multiplier: " + multiplier + "x)");
-
-        // Calculate player's total DMG score before multiplier
-
         playerBaseDmgScore += card.DMG;
-
-
-
-        // Debug.Log("Player Total Score: " + playerBaseDmgScore + " -> " + playerTotalScore + " (+" + (playerTotalScore - playerBaseDmgScore) + " bonus)");
-
-        // Update UI text
         UpdatePokerHandUI(handRank, multiplier);
-
-
-
-
     }
 
     private void UpdatePokerHandUI(RANKS handRank, float multiplier)
@@ -203,45 +136,10 @@ public class PlayedHand : MonoBehaviour
     private void CheckBotPokerHand(CardAttributes botCard, RANKS handRankBot)
     {
 
-        // List<CardAttributes> playerCardTypes = new List<CardAttributes>();
-        // foreach (Card card in playedCards)
-        // {
-        //     playerCardTypes.Add(card.cardType);
-        // }
-
-
-        // float multiplier = GetHandMultiplier(handRank);
-
-        // Debug.Log("Player has: " + handRank.ToString() + " (Multiplier: " + multiplier + "x)");
-
-        // Calculate player's total DMG score before multiplier
         float multiplier = GetHandMultiplier(handRankBot);
 
         botBaseDmgScore += botCard.DMG;
-
-
-
-        // Debug.Log("Player Total Score: " + playerBaseDmgScore + " -> " + playerTotalScore + " (+" + (playerTotalScore - playerBaseDmgScore) + " bonus)");
-
-        // Update UI text
         UpdateBotHandUI(handRankBot, multiplier);
-
-        // Debug.Log("Bot has: " + botHandRank.ToString() + " (Multiplier: " + botMultiplier + "x)");
-
-        // // Calculate bot's total DMG score before multiplier
-        // int baseDmgScore = 0;
-        // foreach (CardAttributes card in playedCardsBot)
-        // {
-        //     baseDmgScore += card.DMG;
-        // }
-
-        // // Update bot UI text
-        // UpdateBotHandUI(botHandRank, botMultiplier);
-
-        // // Apply multiplier to bot cards' DMG and calculate total score
-        // botTotalScore = (int)(baseDmgScore * botMultiplier);
-
-        // Debug.Log("Bot Total Score: " + baseDmgScore + " -> " + botTotalScore + " (+" + (botTotalScore - baseDmgScore) + " bonus)");
     }
 
     private void UpdateBotHandUI(RANKS handRank, float multiplier)
@@ -296,9 +194,6 @@ public class PlayedHand : MonoBehaviour
     private void UpdateScore()
     {
 
-
-
-
         if (scoreText != null)
         {
             scoreText.text = "Round Points - Player: " + playerBaseDmgScore + " Bot: " + botBaseDmgScore;
@@ -312,11 +207,8 @@ public class PlayedHand : MonoBehaviour
 
     private void UpdateTotalScore(float multiplierPlayer, float multiplierBot)
     {
-
-
         int playerScore = (int)(Math.Round((float)(playerBaseDmgScore * multiplierPlayer)));
         int botScore = (int)(Math.Round((float)(botBaseDmgScore * multiplierBot)));
-
 
         playerTotalScore += playerScore;
         botTotalScore += botScore;
@@ -413,7 +305,6 @@ public class PlayedHand : MonoBehaviour
 
     private int GetCardValue(string cardName)
     {
-        // Extract card value from name (assuming format like "2H", "KS", "AS", etc.)
         if (cardName.Contains("A")) return 14; // Ace high
         if (cardName.Contains("K")) return 13;
         if (cardName.Contains("Q")) return 12;
@@ -584,6 +475,7 @@ public class PlayedHand : MonoBehaviour
 
 
         Debug.Log("Round ended - Score reset");
+        isButtonOnCooldown = false;
 
         if (pokerHandText != null)
         {
