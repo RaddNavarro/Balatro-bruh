@@ -7,6 +7,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class HandManager : MonoBehaviour
 {
@@ -23,7 +24,9 @@ public class HandManager : MonoBehaviour
     [SerializeField] private Button discardButton;
 
     public GameObject victoryScreen;
+    public GameObject lostScreen;
     [SerializeField] private Button nextLvlBtn;
+    private Image image;
     private bool isButtonOnCooldown = false;
 
     private List<CardAttributes> playedCardsBot;
@@ -70,6 +73,8 @@ public class HandManager : MonoBehaviour
 
         nextLvlBtn = victoryScreen.GetComponentInChildren<Button>();
         nextLvlBtn.gameObject.SetActive(false);
+
+        image = victoryScreen.GetComponentInChildren<Image>();
 
         round = 1;
         playerPoints = 0;
@@ -484,6 +489,10 @@ public class HandManager : MonoBehaviour
         {
             Win();
         }
+        else if (botPoints >= 3)
+        {
+            Lose();
+        }
         //Lose
 
 
@@ -576,8 +585,13 @@ public class HandManager : MonoBehaviour
 
     private void Win()
     {
+
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         int maxLevels = SceneManager.sceneCountInBuildSettings;
+
+
+        image.enabled = true;
+
 
 
         victoryScreen.SetActive(true);
@@ -589,9 +603,26 @@ public class HandManager : MonoBehaviour
 
     }
 
+    private void Lose()
+    {
+
+        int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+        int maxLevels = SceneManager.sceneCountInBuildSettings;
+
+
+        image.enabled = true;
 
 
 
+        lostScreen.SetActive(true);
+
+    }
+
+
+    // public void OnPointerUp(PointerEventData eventData)
+    // {
+    //     eventData.pointerClick = null;
+    // }
 
     private void Select(Card card, bool state)
     {
