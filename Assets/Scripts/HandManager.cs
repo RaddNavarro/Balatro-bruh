@@ -33,6 +33,8 @@ public class HandManager : MonoBehaviour
     private List<CardAttributes> playedCardsBot;
 
     private int playerTotalScore = 0;
+    private int playerCurrentScore = 0;
+    private int botCurrentScore = 0;
     private int botTotalScore = 0;
     private int playerBaseDmgScore = 0;
     private int botBaseDmgScore = 0;
@@ -87,11 +89,11 @@ public class HandManager : MonoBehaviour
         discardsUsed = 0; // NEW: Initialize discard counter
 
         // Initialize UI text
-        scoreText.text = "Round Points - Player: " + playerBaseDmgScore + " Bot: " + botBaseDmgScore;
+        scoreText.text = "Round Points - Player: " + playerTotalScore + " Bot: " + botTotalScore;
         totalScoreText.text = "Total Points - Player: " + playerTotalScore + " Bot: " + botTotalScore;
         currentRoundText.text = "Round:  " + round;
         UpdateDiscardUI(); // NEW: Initialize discard UI
-        
+
         if (pokerHandText != null)
             pokerHandText.text = "Player: Select cards to play";
         if (botHandText != null)
@@ -105,7 +107,7 @@ public class HandManager : MonoBehaviour
         {
             int remaining = maxDiscards - discardsUsed;
             discardCountText.text = "Discards Remaining: " + remaining;
-            
+
             // Change color based on remaining discards
             if (remaining <= 0)
                 discardCountText.color = Color.red;
@@ -129,9 +131,8 @@ public class HandManager : MonoBehaviour
 
         if (discardButton != null)
         {
-            // MODIFIED: Only allow discarding when not in cooldown, there are selected cards, AND discards are available
-            bool canDiscard = !isButtonOnCooldown && 
-                             PlayingCardHolder.selectedCards.Count > 0 && 
+            bool canDiscard = !isButtonOnCooldown &&
+                             PlayingCardHolder.selectedCards.Count > 0 &&
                              discardsUsed < maxDiscards;
             discardButton.interactable = canDiscard;
         }
@@ -186,7 +187,7 @@ public class HandManager : MonoBehaviour
     private void CheckPokerHand(CardAttributes card, RANKS handRank)
     {
         float multiplier = GetHandMultiplier(handRank);
-        // REMOVED: playerBaseDmgScore += card.DMG; - This was causing double counting
+        playerCurrentScore += card.DMG;
         UpdatePokerHandUI(handRank, multiplier);
     }
 
@@ -206,7 +207,7 @@ public class HandManager : MonoBehaviour
     private void CheckBotPokerHand(CardAttributes botCard, RANKS handRankBot)
     {
         float multiplier = GetHandMultiplier(handRankBot);
-        // REMOVED: botBaseDmgScore += botCard.DMG; - This was causing double counting
+        botCurrentScore += botCard.DMG;
         UpdateBotHandUI(handRankBot, multiplier);
     }
 
@@ -265,7 +266,7 @@ public class HandManager : MonoBehaviour
         if (cards.Count == 0) return 0;
 
         // For high-level hands that use all cards, count everything
-        if (handRank == RANKS.RoyalFlush || handRank == RANKS.StraightFlush || 
+        if (handRank == RANKS.RoyalFlush || handRank == RANKS.StraightFlush ||
             handRank == RANKS.Straight || handRank == RANKS.Flush)
         {
             return cards.Sum(card => card.DMG);
@@ -273,7 +274,7 @@ public class HandManager : MonoBehaviour
 
         // Extract card values for analysis
         Dictionary<int, List<CardAttributes>> valueGroups = new Dictionary<int, List<CardAttributes>>();
-        
+
         foreach (CardAttributes card in cards)
         {
             int value = GetCardValue(card.name.ToUpper());
@@ -563,7 +564,6 @@ public class HandManager : MonoBehaviour
         // Update UI to show the validated scores
         UpdatePokerHandUI(handRankPlayer, GetHandMultiplier(handRankPlayer));
         UpdateBotHandUI(handRankBot, GetHandMultiplier(handRankBot));
-        UpdateScore();
 
         yield return PlaySequence(0, handRankPlayer, handRankBot);
 
@@ -581,6 +581,8 @@ public class HandManager : MonoBehaviour
         }
         playerBaseDmgScore = 0;
         botBaseDmgScore = 0;
+        playerCurrentScore = 0;
+        botCurrentScore = 0;
 
         UpdateScore();
         UpdatePoints();
@@ -716,35 +718,22 @@ public class HandManager : MonoBehaviour
 
 
 
-        victoryScreen.SetActive(true);
-
-        if ((currentSceneIndex + 1) < maxLevels)
+        if (currentSceneIndex + 1 < maxLevels)
         {
             nextLvlBtn.gameObject.SetActive(true);
+            Debug.Log("More elvels");
         }
+
+        victoryScreen.SetActive(true);
+
 
     }
 
     private void Lose()
     {
-
-        int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
-        int maxLevels = SceneManager.sceneCountInBuildSettings;
-
-
         image.enabled = true;
-
-
-
         lostScreen.SetActive(true);
-
     }
-
-
-    // public void OnPointerUp(PointerEventData eventData)
-    // {
-    //     eventData.pointerClick = null;
-    // }
 
     private void Select(Card card, bool state)
     {
