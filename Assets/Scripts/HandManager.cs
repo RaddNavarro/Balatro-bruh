@@ -5,6 +5,7 @@ using System.Linq;
 using TeamPassione;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class HandManager : MonoBehaviour
@@ -19,17 +20,20 @@ public class HandManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI botHandText;
 
     [SerializeField] private Button playHandButton;
-
     [SerializeField] private Button discardButton;
+
+    public GameObject victoryScreen;
+    [SerializeField] private Button nextLvlBtn;
     private bool isButtonOnCooldown = false;
 
     private List<CardAttributes> playedCardsBot;
-    // private int playerPoints = 0;
-    // private int botPoints = 0;
+
     private int playerTotalScore = 0;
     private int botTotalScore = 0;
     private int playerBaseDmgScore = 0;
     private int botBaseDmgScore = 0;
+    private int playerPoints = 0;
+    private int botPoints = 0;
     private int round = 1;
 
     public enum RANKS
@@ -56,6 +60,7 @@ public class HandManager : MonoBehaviour
 
     private void Start()
     {
+        victoryScreen.SetActive(false);
         Shuffle(botDeck);
 
         foreach (Card card in playedCards)
@@ -63,7 +68,12 @@ public class HandManager : MonoBehaviour
             card.SelectEvent.AddListener(Select);
         }
 
+        nextLvlBtn = victoryScreen.GetComponentInChildren<Button>();
+        nextLvlBtn.gameObject.SetActive(false);
+
         round = 1;
+        playerPoints = 0;
+        botPoints = 0;
 
         // Initialize UI text
         scoreText.text = "Round Points - Player: " + playerBaseDmgScore + " Bot: " + botBaseDmgScore;
@@ -221,16 +231,11 @@ public class HandManager : MonoBehaviour
 
     private void UpdateScore()
     {
-
         if (scoreText != null)
-        {
             scoreText.text = "Round Points - Player: " + playerBaseDmgScore + " Bot: " + botBaseDmgScore;
-            currentRoundText.text = "Round: " + round;
-        }
-        else
-        {
-            Debug.LogWarning("Score Text is null! Make sure it's assigned in the inspector.");
-        }
+        currentRoundText.text = "Round: " + round;
+
+
     }
 
     private void UpdateTotalScore(float multiplierPlayer, float multiplierBot)
@@ -241,15 +246,19 @@ public class HandManager : MonoBehaviour
         playerTotalScore += playerScore;
         botTotalScore += botScore;
 
-        if (totalScoreText != null)
-        {
-            totalScoreText.text = "Round Points - Player: " + playerTotalScore + " Bot: " + botTotalScore;
+        if (scoreText != null)
+            scoreText.text = "Round Points - Player: " + playerTotalScore + " Bot: " + botTotalScore;
+    }
 
-        }
-        else
-        {
-            Debug.LogWarning("Score Text is null! Make sure it's assigned in the inspector.");
-        }
+    private void UpdatePoints()
+    {
+        if (playerTotalScore > botTotalScore)
+            playerPoints += 1;
+        else if (playerTotalScore < botTotalScore)
+            botPoints += 1;
+
+        if (totalScoreText != null)
+            totalScoreText.text = "Round Points - Player: " + playerPoints + " Bot: " + botPoints;
     }
 
     private RANKS EvaluatePokerHand(List<CardAttributes> cards)
@@ -287,9 +296,6 @@ public class HandManager : MonoBehaviour
         // FIXED: Only allow flush-based hands with 5+ cards
         bool isFlush = cards.Count >= 5 && suitCounts.Values.Any(count => count >= 5);
         bool isStraight = cards.Count >= 5 && CheckStraight(valueCounts.Keys.ToList());
-
-        Debug.Log("IsFlush: " + isFlush + ", IsStraight: " + isStraight);
-        Debug.Log("Value counts: " + string.Join(", ", counts));
 
         // FIXED: Royal Flush and Straight Flush only work with 5+ cards
         // Royal Flush (A, K, Q, J, 10 all same suit)
@@ -457,17 +463,6 @@ public class HandManager : MonoBehaviour
         UpdateTotalScore(multiplierPlayer, multiplierBot);
 
 
-
-        Debug.Log("Player Total Score: " + playerBaseDmgScore + " -> " + playerTotalScore + " (+" + (playerTotalScore - playerBaseDmgScore) + " bonus)");
-
-
-        Debug.Log("Bot Total Score: " + botBaseDmgScore + " -> " + botTotalScore + " (+" + (botTotalScore - botBaseDmgScore) + " bonus)");
-
-        playerBaseDmgScore = 0;
-        botBaseDmgScore = 0;
-        round++;
-        UpdateScore();
-
         int i = 0;
         while (i < playedCards.Count)
         {
@@ -475,10 +470,25 @@ public class HandManager : MonoBehaviour
             i++;
             yield return new WaitForSeconds(0.5f);
         }
-        Debug.Log("done playing");
+        playerBaseDmgScore = 0;
+        botBaseDmgScore = 0;
 
 
-        Debug.Log("Round ended - Score reset");
+        UpdateScore();
+        UpdatePoints();
+        playerTotalScore = 0;
+        botTotalScore = 0;
+
+        // Win
+        if (playerPoints >= 3)
+        {
+            Win();
+        }
+        //Lose
+
+
+
+
         isButtonOnCooldown = false;
 
         if (pokerHandText != null)
@@ -495,14 +505,8 @@ public class HandManager : MonoBehaviour
         playedCards.Clear();
         PlayingCardHolder.DrawHand();
 
+        round++;
 
-
-        Debug.Log("End Level" + round);
-        if (round == 4)
-        {
-            // insert victory screen
-            Debug.Log("Win/Lose " + round);
-        }
     }
 
     public void DiscardSelectedCards()
@@ -512,8 +516,6 @@ public class HandManager : MonoBehaviour
             Debug.Log("Cannot discard: either on cooldown or no cards selected");
             return;
         }
-
-        Debug.Log("Discarding " + PlayingCardHolder.selectedCards.Count + " selected cards");
 
         // Start the discard coroutine to handle the process properly
         StartCoroutine(DiscardCardsCoroutine());
@@ -545,7 +547,6 @@ public class HandManager : MonoBehaviour
             }
         }
 
-        Debug.Log("Cards discarded successfully");
 
         // Wait for the objects to be actually destroyed
         yield return new WaitForEndOfFrame();
@@ -557,20 +558,35 @@ public class HandManager : MonoBehaviour
             PlayingCardHolder.selectedCards = new List<Card>();
         }
 
-        // Try to clear the hand first if there's a method for it
-        // Then draw new hand
-        Debug.Log("Attempting to draw new hand...");
+
         PlayingCardHolder.DrawHand();
 
-        // Wait a bit more and try again if the first attempt didn't work
+
         yield return new WaitForSeconds(0.1f);
         if (PlayingCardHolder.selectedCards.Count == 0)
         {
-            Debug.Log("First draw attempt may have failed, trying again...");
+
             PlayingCardHolder.DrawHand();
         }
 
-        Debug.Log("New cards drawn to replace discarded cards");
+    }
+
+
+
+
+    private void Win()
+    {
+        int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+        int maxLevels = SceneManager.sceneCountInBuildSettings;
+
+
+        victoryScreen.SetActive(true);
+
+        if ((currentSceneIndex + 1) < maxLevels)
+        {
+            nextLvlBtn.gameObject.SetActive(true);
+        }
+
     }
 
 
