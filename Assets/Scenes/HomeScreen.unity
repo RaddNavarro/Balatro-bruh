@@ -629,7 +629,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: SampleScene 1
+          m_StringArgument: TutorialScene
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &846002342
@@ -652,7 +652,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 8960231e7b7b7304f9f9acb050888e8c, type: 3}
+  m_Sprite: {fileID: 21300000, guid: e77f23bf1680e964f8220b8b4b2ca9ad, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -968,7 +968,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: TestScene
+          m_StringArgument: Lv1
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &1389324746
@@ -991,7 +991,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: b18cc2b14769cdc4eb04ce37f75b6fb7, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 366c18f443b3c9e4e8f3f8267683098e, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1165,7 +1165,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1781887312}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1116514912}
+        m_TargetAssemblyTypeName: SceneManagerScript, Assembly-CSharp
+        m_MethodName: Quit
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1781887312
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1186,7 +1198,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: a4ed6700a260c9a4ab002cbfc6a21a92, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 0b8043f87556f8a43a7f6edb79c31383, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
